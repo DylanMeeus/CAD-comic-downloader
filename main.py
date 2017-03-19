@@ -1,6 +1,7 @@
 import sys
 import urllib, urllib2
 import os
+from datetime import date,datetime
 from bs4 import BeautifulSoup
 
 """ Program to download all the cad-comics (ctrl+alt+del comics)
@@ -19,9 +20,11 @@ hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML,
 baseUrl = "http://www.cad-comic.com"
 
 global scrapingYear # The year we are scraping
+global index # The index of the comic for the given year
 
 def scrape(partialComicURL):
     global scrapingYear
+    global index
     print "Scraping CAD-comics.."
     site = baseUrl + partialComicURL
     request = urllib2.Request(site,headers=hdr)
@@ -34,10 +37,11 @@ def scrape(partialComicURL):
     imageRequest = urllib2.Request(imageSource,headers=hdr)
 
     # format filename, jus take the last part of the comic (after 2nd slash of partial)
-    filename = (partialComicURL.split("/")[2])+"jpg"
+    filename = str(index) + " : " + (partialComicURL.split("/")[2]) + ".jpg"
+    index+=1
 
+    #Write the image to a file
 
-    # Write the image to a file
     f = open(scrapingYear+"/"+filename,"wb")
     f.write(urllib2.urlopen(imageRequest).read())
     f.close()
@@ -48,6 +52,8 @@ def scrape(partialComicURL):
 def scrapeArchiveForComics(year):
     print year
     global scrapingYear
+    global index
+    index = 0 # We set the index to 0 again, because we are creating a new list of comics
     scrapingYear = year
     archiveUrl = "http://www.cad-comic.com/cad/archive/" + year
 
@@ -58,8 +64,8 @@ def scrapeArchiveForComics(year):
     aTags = soup.find_all("a")
     comicTags = filter(urlContainsYear,aTags)
     comicUrls = map(mapFetchHrefFromImageUrl,comicTags)
-    print comicUrls
-    return comicUrls
+    # These are sorted by how they appear in the archive. They need to be reversed (last on archive = first chronologically)
+    return (list(reversed(comicUrls)))
 
 
 def urlContainsYear(url):
@@ -73,15 +79,55 @@ def mapFetchHrefFromImageUrl(imgUrl):
 
 """ main method to download for year"""
 def downloadForYear(year):
-    comicUrls = scrapeArchiveForComics("2002")
+    comicUrls = scrapeArchiveForComics(year)
     try:
         os.mkdir(year) # Create a folder to store the comics.
     except OSError:
             pass # the folder already exists, should we maybe empty it?
+
+    i = 0
     for comic in comicUrls:
+        print "Scraping CAD-comic #" + str(i) + " from: " + str(len(comicUrls)) + " for year: " + year
         scrape(comic)
+        i+=1
 
-downloadForYear("2002")
-#scrape()
 
-# todo : give number according to order they should be read in? Possible by comparing the date
+def main():
+    if len (sys.argv) > 1:
+        year = sys.argv[1]
+        if year == "all":
+            print "Scraping for all years"
+            thisYear = datetime.now().year
+            yearRange = range(2002,thisYear+1) # +1 to include the current year. Otherwise range is not-inclusive
+            for archiveYear in yearRange:
+                downloadForYear(str(archiveYear))
+            print "Done!"
+        else:
+            print "Scraping for year: " + year
+            downloadForYear(str(year))
+            print "Done!"
+    else:
+        print "Pass a year, starting from 2002 (sample usage: python main.py 2002"
+
+main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
