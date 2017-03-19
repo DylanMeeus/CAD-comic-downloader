@@ -37,11 +37,11 @@ def scrape(partialComicURL):
     imageRequest = urllib2.Request(imageSource,headers=hdr)
 
     # format filename, jus take the last part of the comic (after 2nd slash of partial)
-    filename = str(index) + " : " + (partialComicURL.split("/")[2]) + ".jpg"
+    extension = imageSource[-3:]
+    filename = str(index) + " : " + (partialComicURL.split("/")[2]) + "." + extension
     index+=1
 
     #Write the image to a file
-
     f = open(scrapingYear+"/"+filename,"wb")
     f.write(urllib2.urlopen(imageRequest).read())
     f.close()
@@ -96,9 +96,10 @@ def main():
     if len (sys.argv) > 1:
         year = sys.argv[1]
         if year == "all":
+            startYear = int(sys.argv[2]) if len (sys.argv) == 3 else 2002
             print "Scraping for all years"
             thisYear = datetime.now().year
-            yearRange = range(2002,thisYear+1) # +1 to include the current year. Otherwise range is not-inclusive
+            yearRange = range(startYear,thisYear+1) # +1 to include the current year. Otherwise range is not-inclusive
             for archiveYear in yearRange:
                 downloadForYear(str(archiveYear))
             print "Done!"
