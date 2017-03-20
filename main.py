@@ -6,10 +6,10 @@ from bs4 import BeautifulSoup
 
 """ Program to download all the cad-comics (ctrl+alt+del comics)
     If you like the comics, considering becoming a Patreon of Tim: https://www.patreon.com/CtrlAltDel
-    I am in no way affiliated with CAD-comics, but feel that if you use this program, you should consider becoming a patron
-    Because Tim will miss out on revenue made through ads of his website."""
+    I am in no way affiliated with CAD-comics, but feel that if you use this program, you should consider becoming a patron,
+    because Tim will miss out on revenue made through ads of his website."""
 
-# Pass some headers, so the website allows our requests.
+# Pass some headers, so the server allows our requests.
 hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -25,7 +25,7 @@ global index # The index of the comic for the given year
 def scrape(partialComicURL):
     global scrapingYear
     global index
-    print "Scraping CAD-comics.."
+
     site = baseUrl + partialComicURL
     request = urllib2.Request(site,headers=hdr)
     f = urllib2.urlopen(request)
@@ -48,12 +48,12 @@ def scrape(partialComicURL):
     return
 
 
-""" Scrape an archive for a given year, finds retrieves all the comic URLs for this year."""
+""" Scrape an archive for a given year, retrieves all the comic URLs for this year."""
 def scrapeArchiveForComics(year):
     print year
     global scrapingYear
     global index
-    index = 0 # We set the index to 0 again, because we are creating a new list of comics
+    index = 0 # We set the index to 0 again, because we are fetching a new year of comics
     scrapingYear = year
     archiveUrl = "http://www.cad-comic.com/cad/archive/" + year
 
@@ -70,7 +70,7 @@ def scrapeArchiveForComics(year):
 
 def urlContainsYear(url):
     global scrapingYear
-    stringUrl = str(url) # Because BeautifulSoup makes it a 'tag' normally
+    stringUrl = str(url) # Because BeautifulSoup makes it a 'Tag'-object normally
     return scrapingYear in stringUrl
 
 def mapFetchHrefFromImageUrl(imgUrl):
@@ -108,7 +108,7 @@ def main():
             downloadForYear(str(year))
             print "Done!"
     else:
-        print "Pass a year, starting from 2002 (sample usage: python main.py 2002"
+        print "Pass a year or _all_, starting from 2002 (sample usage: python main.py 2002, python main.py all, python main,py all 2006)"
 
 main()
 
